@@ -1,0 +1,32 @@
+name: Daily Discord YouTube Stream Webhook
+
+on:
+  schedule:
+    # 13:00 UTC = 20:00 WIB (Waktu Indonesia Barat)
+    - cron: '0 13 * * *'
+  workflow_dispatch: # Memungkinkan kirim manual dari GitHub
+
+jobs:
+  send-webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Webhook
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d '{
+            "content": "Join Server Kita Ramaikan 20:00-22:00 tonton live https://youtube.com/@qvich?si=cW958MSxlbHBX9hP @everyone",
+            "embeds": [
+              {
+                "title": "🔴 YOUTUBE LIVE STREAM IS NOW ON!",
+                "description": "Jangan sampai ketinggalan! Live streaming sedang berlangsung. Klik tautan di atas untuk menonton dan bergabung ke server!",
+                "color": 16718165,
+                "image": {
+                  "url": "https://media0.giphy.com/media/v1.Y2lkPTZjMDliPTZjMDliOTUyamQzd3N3dmo1dGRvaDRueGNkdXU4aWw2ZnV1cHU5dTFleDBlbWYwdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/0xAEeAJHP3FZ4vzYoq/giphy.gif"
+                },
+                "footer": {
+                  "text": "Automated YouTube Live Notification • Daily at 20:00 WIB"
+                }
+              }
+            ]
+          }' https://discord.com/api/webhooks/1559897895287791636/FBYEwTylTsDjewOz8FXyHPIeKNMt5IrJQOVGjOHhY3MayqAdwHCAUoV_Kj5rH4l60way
