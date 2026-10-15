@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord CyberBroadcast Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        discord: {
+                            blurple: '#5865F2',
+                            green: '#57F287',
+                            yellow: '#FEE75C',
+                            fuchsia: '#EB459E',
+                            red: '#ED4245',
+                            dark: '#2B2D31',
+                            darker: '#1E1F22',
+                            light: '#313338'
+                        },
+                        cyber: {
+                            purple: '#A855F7',
+                            pink: '#EC4899',
+                            cyan: '#06B6D4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass-panel {
+            background: rgba(30, 31, 34, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-purple { box-shadow: 0 0 30px -5px rgba(88, 101, 242, 0.35); }
+        .glow-cyan { box-shadow: 0 0 30px -5px rgba(6, 182, 212, 0.35); }
+        .cyber-border {
+            position: relative;
+        }
+        .cyber-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(88, 101, 242, 0.6), rgba(236, 72, 153, 0.4), rgba(6, 182, 212, 0.6));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #18191c; }
+        ::-webkit-scrollbar-thumb { background: #35363c; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5865F2; }
+    </style>
+</head>
+<body class="bg-[#111214] text-slate-100 min-h-screen flex flex-col justify-between selection:bg-discord-blurple selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- GitHub Guide Modal -->
+    <div id="github-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+        <div class="glass-panel cyber-border rounded-2xl max-w-2xl w-full p-6 space-y-5 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="toggleGithubModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-discord-blurple text-xl">
+                    <i class="fa-brands fa-github"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-white">Panduan Upload ke GitHub Pages</h3>
+                    <p class="text-xs text-slate-400">Jadikan bot web scheduler ini online 24/7 gratis</p>
+                </div>
+            </div>
+            <div class="space-y-4 text-xs text-slate-300">
+                <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+                    <div class="flex gap-3">
+                        <span class="w-6 h-6 rounded-lg bg-discord-blurple/20 text-discord-blurple font-bold flex items-center justify-center shrink-0">1</span>
+                        <div>
+                            <p class="font-semibold text-white">Simpan File Website</p>
+                            <p class="text-slate-400 mt-0.5">Simpan kode halaman ini dengan nama file <code class="bg-black/50 text-cyan-400 px-1.5 py-0.5 rounded font-mono">index.html</code>.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="w-6 h-6 rounded-lg bg-discord-blurple/20 text-discord-blurple font-bold flex items-center justify-center shrink-0">2</span>
+                        <div>
+                            <p class="font-semibold text-white">Buat Repository Baru di GitHub</p>
+                            <p class="text-slate-400 mt-0.5">Buka <a href="https://github.com/new" target="_blank" class="text-cyan-400 underline">github.com/new</a>, beri nama repository (misal: <code class="bg-black/50 text-cyan-400 px-1.5 py-0.5 rounded font-mono">discord-bot-scheduler</code>), lalu buat repository Public.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="w-6 h-6 rounded-lg bg-discord-blurple/20 text-discord-blurple font-bold flex items-center justify-center shrink-0">3</span>
+                        <div>
+                            <p class="font-semibold text-white">Upload File</p>
+                            <p class="text-slate-400 mt-0.5">Klik <strong>Upload an existing file</strong>, tarik file <code class="bg-black/50 text-cyan-400 px-1.5 py-0.5 rounded font-mono">index.html</code>, lalu klik tombol <strong>Commit changes</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="w-6 h-6 rounded-lg bg-discord-blurple/20 text-discord-blurple font-bold flex items-center justify-center shrink-0">4</span>
+                        <div>
+                            <p class="font-semibold text-white">Aktifkan GitHub Pages</p>
+                            <p class="text-slate-400 mt-0.5">Masuk ke menu <strong>Settings</strong> &gt; <strong>Pages</strong>. Pada bagian <em>Build and deployment</em>, pilih Source: <code class="bg-black/50 text-cyan-400 px-1.5 py-0.5 rounded font-mono">Deploy from a branch</code>, pilih branch <code class="bg-black/50 text-cyan-400 px-1.5 py-0.5 rounded font-mono">main / root</code>, lalu Save.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 bg-cyan-950/30 border border-cyan-500/20 rounded-xl text-cyan-200 text-xs flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-cyan-400 text-base shrink-0"></i>
+                    <span><strong>Tips Pro:</strong> Setelah di-host, cukup biarkan tab browser ini terbuka di latar belakang atau perangkat kedua untuk menjalankan scheduler.</span>
+                </div>
+            </div>
+            <button onclick="toggleGithubModal()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs transition">Tutup Panduan</button>
+        </div>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="glass-panel border-b border-slate-800/80 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-discord-blurple via-cyber-purple to-cyber-pink flex items-center justify-center glow-purple">
+                    <i class="fa-brands fa-discord text-white text-xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-extrabold text-base tracking-tight bg-gradient-to-r from-white via-slate-200 to-discord-blurple bg-clip-text text-transparent">CyberBroadcast Hub</h1>
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-discord-blurple/20 text-discord-blurple border border-discord-blurple/30">v2.5</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Scheduled Webhook & Embed Manager</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleGithubModal()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 border border-slate-700 transition">
+                    <i class="fa-brands fa-github text-sm"></i> GitHub Guide
+                </button>
+                <div id="status-badge" class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span id="status-text">Standby</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- Left Controls Column (8 cols) -->
+        <div class="lg:col-span-7 space-y-6">
+
+            <!-- Webhook Connection Card -->
+            <div class="glass-panel cyber-border rounded-2xl p-5 shadow-xl space-y-3">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-plug text-discord-blurple"></i> Discord Webhook Endpoint
+                    </label>
+                    <button onclick="resetWebhook()" class="text-[11px] text-discord-blurple hover:text-indigo-300 transition underline">Reset Default</button>
+                </div>
+                <div class="relative">
+                    <input type="url" id="webhook-url" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-4 py-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-discord-blurple focus:ring-1 focus:ring-discord-blurple transition" value="https://discord.com/api/webhooks/1559897895287791636/FBYEwTylTsDjewOz8FXyHPIeKNMt5IrJQOVGjOHhY3MayqAdwHCAUoV_Kj5rH4l60way" placeholder="https://discord.com/api/webhooks/...">
+                </div>
+            </div>
+
+            <!-- Preset Theme Selection -->
+            <div class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-cyber-pink"></i> Pilih Template Preset Pesan
+                </h2>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Preset 1 -->
+                    <button onclick="applyPreset(1)" id="preset-btn-1" class="preset-btn active p-3 rounded-xl bg-slate-900/80 border-2 border-discord-blurple text-left transition relative overflow-hidden group">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                <i class="fa-solid fa-bullhorn text-discord-blurple"></i> 1. Standard Announcement
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 line-clamp-1">Join Server Kita Ramaikan 20:00-22:00</p>
+                    </button>
+
+                    <!-- Preset 2 -->
+                    <button onclick="applyPreset(2)" id="preset-btn-2" class="preset-btn p-3 rounded-xl bg-slate-900/40 border border-slate-800 text-left transition hover:border-slate-700 relative overflow-hidden group">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                <i class="fa-brands fa-youtube text-rose-500"></i> 2. YouTube Live Stream
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 line-clamp-1">Join Server & Live YouTube + @everyone</p>
+                    </button>
+
+                    <!-- Preset 3 -->
+                    <button onclick="applyPreset(3)" id="preset-btn-3" class="preset-btn p-3 rounded-xl bg-slate-900/40 border border-slate-800 text-left transition hover:border-slate-700 relative overflow-hidden group">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                <i class="fa-solid fa-gamepad text-cyber-cyan"></i> 3. Anime Gaming Hype
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 line-clamp-1">Pesan bergaya Rich Embed + Anime GIF Hype</p>
+                    </button>
+
+                    <!-- Preset 4 -->
+                    <button onclick="applyPreset(4)" id="preset-btn-4" class="preset-btn p-3 rounded-xl bg-slate-900/40 border border-slate-800 text-left transition hover:border-slate-700 relative overflow-hidden group">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                <i class="fa-solid fa-sliders text-cyber-purple"></i> 4. Custom Editor
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 line-clamp-1">Bebas edit judul, warna embed, teks & gambar</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Custom Content & Media Editor -->
+            <div class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-cyber-cyan"></i> Kustomisasi Isi & Media
+                    </h2>
+                    <span class="text-[11px] text-slate-400">Dukungan Markdown & Rich Embed</span>
+                </div>
+
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Pesan Teks (Outside Embed / Tag Mention)</label>
+                        <textarea id="msg-text" rows="2" oninput="updatePreview()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-discord-blurple transition resize-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Judul Embed (Title)</label>
+                            <input type="text" id="msg-embed-title" oninput="updatePreview()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-discord-blurple transition" placeholder="Contoh: 🔥 MABAR NIGHT STARTED!">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Warna Embed Discord</label>
+                            <div class="flex gap-2 items-center">
+                                <input type="color" id="msg-embed-color" value="#5865F2" oninput="updatePreview()" class="w-9 h-9 rounded-lg bg-transparent cursor-pointer border border-slate-700">
+                                <input type="text" id="msg-embed-color-hex" value="#5865F2" oninput="syncColorInput()" class="flex-grow bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-discord-blurple">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Deskripsi Embed</label>
+                        <textarea id="msg-embed-desc" rows="2" oninput="updatePreview()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-discord-blurple transition resize-none" placeholder="Tuliskan deskripsi tambahan di sini..."></textarea>
+                    </div>
+
+                    <!-- Anime GIF Selector -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-image text-pink-400"></i> Galeri Anime GIF / Media Embed
+                            </label>
+                            <button onclick="clearSelectedGif()" class="text-[10px] text-slate-400 hover:text-white transition">Hapus Gambar</button>
+                        </div>
+                        <div class="grid grid-cols-5 gap-2 mb-2">
+                            <button onclick="selectGif('https://media0.giphy.com/media/v1.Y2lkPTZjMDliOTUyamQzd3N3dmo1dGRvaDRueGNkdXU4aWw2ZnV1cHU5dTFleDBlbWYwdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/0xAEeAJHP3FZ4vzYoq/giphy.gif', this)" class="gif-thumb rounded-xl border-2 border-discord-blurple overflow-hidden h-14 relative group focus:outline-none">
+                                <img src="https://media0.giphy.com/media/v1.Y2lkPTZjMDliOTUyamQzd3N3dmo1dGRvaDRueGNkdXU4aWw2ZnV1cHU5dTFleDBlbWYwdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/0xAEeAJHP3FZ4vzYoq/giphy.gif" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="Pilihan GIF Utama">
+                            </button>
+                            <button onclick="selectGif('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWp3dWV1dnV2cnU4cDVyNjdrN2pxcnVscHNqcmxwcWhjMmJidWZ0biZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L3X9GvpmP9l0O9lniy/giphy.gif', this)" class="gif-thumb rounded-xl border-2 border-slate-800 overflow-hidden h-14 relative group focus:outline-none">
+                                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWp3dWV1dnV2cnU4cDVyNjdrN2pxcnVscHNqcmxwcWhjMmJidWZ0biZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L3X9GvpmP9l0O9lniy/giphy.gif" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="Anime Gaming">
+                            </button>
+                            <button onclick="selectGif('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOW11azI0Mm04dHd1eTBzMG93djY2NWFod2FndW5hMnVpNHpsand5bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/131vvhKOm6qA0w/giphy.gif', this)" class="gif-thumb rounded-xl border-2 border-slate-800 overflow-hidden h-14 relative group focus:outline-none">
+                                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOW11azI0Mm04dHd1eTBzMG93djY2NWFod2FndW5hMnVpNHpsand5bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/131vvhKOm6qA0w/giphy.gif" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="Anime Hype">
+                            </button>
+                            <button onclick="selectGif('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG9kNG9xdXZsMndic3VjcnVrbnhubndlNWpzcXRudmxxdWhldnE3OCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mCRJDo24UvJMA/giphy.gif', this)" class="gif-thumb rounded-xl border-2 border-slate-800 overflow-hidden h-14 relative group focus:outline-none">
+                                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG9kNG9xdXZsMndic3VjcnVrbnhubndlNWpzcXRudmxxdWhldnE3OCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mCRJDo24UvJMA/giphy.gif" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="Anime Dance">
+                            </button>
+                            <button onclick="selectGif('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYTVocHB2ZzRwdHNtb2lsOGMya2oxNm91NHU2OWY5NGxldXpvcHBrcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKSjRrfIPjeiVyM/giphy.gif', this)" class="gif-thumb rounded-xl border-2 border-slate-800 overflow-hidden h-14 relative group focus:outline-none">
+                                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYTVocHB2ZzRwdHNtb2lsOGMya2oxNm91NHU2OWY5NGxldXpvcHBrcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKSjRrfIPjeiVyM/giphy.gif" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="Live Neon">
+                            </button>
+                        </div>
+                        <input type="url" id="msg-embed-image" oninput="updatePreview()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-discord-blurple transition" placeholder="Atau tempelkan Direct URL Gambar/GIF (https://...)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auto Scheduler Settings & Action Buttons -->
+            <div class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-clock text-discord-yellow"></i> Auto Scheduler & Timer
+                        </h2>
+                        <p class="text-[11px] text-slate-400">Atur waktu pengiriman berkala ke Discord</p>
+                    </div>
+                    <!-- Test Button -->
+                    <button onclick="sendTestMessage(event)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-lg shadow-emerald-900/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-flask text-sm"></i> 🧪 Kirim Test Pesan
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Mode Interval Pengiriman</label>
+                        <select id="schedule-mode" onchange="toggleScheduleMode()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-discord-blurple transition">
+                            <option value="interval-5s">Uji Coba Cepat (Setiap 5 Detik)</option>
+                            <option value="interval-1h" selected>Setiap 1 Jam (Default)</option>
+                            <option value="interval-2h">Setiap 2 Jam</option>
+                            <option value="interval-3h">Setiap 3 Jam</option>
+                            <option value="interval-6h">Setiap 6 Jam</option>
+                            <option value="specific-time">Jam Spesifik Setiap Hari (Target Jam)</option>
+                        </select>
+                    </div>
+
+                    <div id="specific-time-container" class="hidden">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Pilih Jam Spesifik</label>
+                        <input type="time" id="specific-time-input" value="20:00" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-discord-blurple transition">
+                    </div>
+                </div>
+
+                <!-- Live Timer & Start Button Box -->
+                <div class="bg-slate-900/80 rounded-xl p-4 border border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-4 w-full sm:w-auto">
+                        <div class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-discord-blurple text-xl shrink-0">
+                            <i class="fa-solid fa-stopwatch"></i>
+                        </div>
+                        <div>
+                            <div class="text-[10px] text-slate-400 uppercase font-semibold">Pengiriman Berikutnya:</div>
+                            <div id="countdown-timer" class="font-mono text-xl font-bold text-discord-yellow">--:--:--</div>
+                            <div class="text-[10px] text-slate-500">Terkirim: <span id="success-count" class="text-emerald-400 font-bold">0</span> pesan</div>
+                        </div>
+                    </div>
+
+                    <button id="toggle-scheduler-btn" onclick="toggleScheduler()" class="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-discord-blurple via-cyber-purple to-cyber-pink hover:opacity-90 text-white shadow-lg transition flex items-center justify-center gap-2">
+                        <i id="scheduler-icon" class="fa-solid fa-play"></i>
+                        <span id="scheduler-btn-text">Aktifkan Auto Scheduler</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Visual Preview & Console Column (5 cols) -->
+        <div class="lg:col-span-5 space-y-6">
+
+            <!-- Real-time Discord Preview -->
+            <div class="glass-panel rounded-2xl p-5 shadow-xl space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                        <i class="fa-brands fa-discord text-discord-blurple"></i> Discord Live Message Preview
+                    </h3>
+                    <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Visual Mode</span>
+                </div>
+
+                <!-- Simulated Discord Chat Box -->
+                <div class="bg-discord-dark p-4 rounded-xl border border-slate-800 space-y-3">
+                    <!-- Bot Header -->
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-discord-blurple to-cyber-purple flex items-center justify-center text-white shrink-0 font-bold text-sm shadow">
+                            BOT
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-sm text-white">CyberBot</span>
+                                <span class="bg-discord-blurple text-white text-[9px] font-bold px-1.5 py-0.2 rounded">BOT</span>
+                                <span class="text-[10px] text-slate-400">Hari ini pukul <span id="preview-time">20:00</span></span>
+                            </div>
+                            <!-- Outside Text -->
+                            <div id="preview-text" class="text-xs text-slate-200 mt-1 break-words">Join Server Kita Ramaikan 20:00-22:00</div>
+                            
+                            <!-- Embed Card -->
+                            <div id="preview-embed-card" class="mt-2 rounded-r-md bg-discord-darker p-3 space-y-2 border-l-4 transition-all" style="border-color: #5865F2;">
+                                <div id="preview-embed-title" class="font-bold text-sm text-white">🔥 MABAR NIGHT STARTED!</div>
+                                <div id="preview-embed-desc" class="text-xs text-slate-300 break-words whitespace-pre-line">Join Server Kita Ramaikan 20:00-22:00</div>
+                                <div id="preview-embed-img-box" class="rounded-lg overflow-hidden mt-2 max-h-48 border border-slate-800 hidden">
+                                    <img id="preview-embed-img" src="" class="w-full h-full object-cover" alt="Embed Media">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Activity Log / Console -->
+            <div class="glass-panel rounded-2xl p-5 shadow-xl space-y-3 flex flex-col h-[380px]">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-terminal text-emerald-400"></i> Live Console Activity Log
+                    </h3>
+                    <button onclick="clearLogs()" class="text-[10px] text-slate-400 hover:text-white transition">Bersihkan Log</button>
+                </div>
+
+                <div id="log-container" class="flex-grow space-y-2 overflow-y-auto font-mono text-[11px] pr-1">
+                    <div class="text-slate-500 text-center py-12 italic">Belum ada riwayat aktivitas...</div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/60 bg-[#0d0e10] py-4 text-center text-xs text-slate-500">
+        <p>Discord CyberBroadcast Hub &bull; Solusi Otomatisasi Message Komunitas Gaming & Discord</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        const DEFAULT_WEBHOOK = "https://discord.com/api/webhooks/1559897895287791636/FBYEwTylTsDjewOz8FXyHPIeKNMt5IrJQOVGjOHhY3MayqAdwHCAUoV_Kj5rH4l60way";
+
+        const DEFAULT_GIF = "https://media0.giphy.com/media/v1.Y2lkPTZjMDliOTUyamQzd3N3dmo1dGRvaDRueGNkdXU4aWw2ZnV1cHU5dTFleDBlbWYwdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/0xAEeAJHP3FZ4vzYoq/giphy.gif";
+
+        // Preset Configurations
+        const PRESETS = {
+            1: {
+                text: "Join Server Kita Ramaikan 20:00-22:00",
+                title: "📢 ANNOUNCEMENT COMMUNITY",
+                color: "#5865F2",
+                desc: "Yuk kumpul sekarang! Server sudah dibuka untuk semua member.",
+                image: DEFAULT_GIF
+            },
+            2: {
+                text: "Join Server Kita Ramaikan 20:00-22:00 tonton live https://youtube.com/@qvich?si=cW958MSxlbHBX9hP @everyone",
+                title: "🔴 LIVE STREAMING NOW!",
+                color: "#ED4245",
+                desc: "Live stream sedang berlangsung di YouTube! Klik link di atas dan jangan lupa ramaikan chat!",
+                image: DEFAULT_GIF
+            },
+            3: {
+                text: "🎮 MABAR ANIME GAMING TIME! @everyone",
+                title: "⚡ HYPE GAMING NIGHT (20:00 - 22:00)",
+                color: "#EC4899",
+                desc: "Siapkan voice room kalian! Kita bakalan mabar seru malam ini sampai jam 22:00 WIB.",
+                image: DEFAULT_GIF
+            },
+            4: {
+                text: "Custom Message Text",
+                title: "✨ Custom Embed Title",
+                color: "#06B6D4",
+                desc: "Edit sesuka hati Anda menggunakan Custom Editor.",
+                image: DEFAULT_GIF
+            }
+        };
+
+        let isRunning = false;
+        let schedulerInterval = null;
+        let countdownInterval = null;
+        let nextRunTime = null;
+        let successCount = 0;
+        let activePresetId = 1;
+
+        // Initialize App
+        window.onload = function() {
+            applyPreset(1);
+            const now = new Date();
+            document.getElementById('preview-time').textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        };
+
+        function resetWebhook() {
+            document.getElementById('webhook-url').value = DEFAULT_WEBHOOK;
+            showToast("Webhook dikembalikan ke default.", "info");
+        }
+
+        function toggleGithubModal() {
+            const modal = document.getElementById('github-modal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        function applyPreset(id) {
+            activePresetId = id;
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('active', 'border-discord-blurple', 'bg-slate-900/80');
+                btn.classList.add('border-slate-800', 'bg-slate-900/40');
+            });
+
+            const activeBtn = document.getElementById(`preset-btn-${id}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'border-discord-blurple', 'bg-slate-900/80');
+                activeBtn.classList.remove('border-slate-800', 'bg-slate-900/40');
+            }
+
+            const data = PRESETS[id];
+            document.getElementById('msg-text').value = data.text;
+            document.getElementById('msg-embed-title').value = data.title;
+            document.getElementById('msg-embed-color').value = data.color;
+            document.getElementById('msg-embed-color-hex').value = data.color;
+            document.getElementById('msg-embed-desc').value = data.desc;
+            document.getElementById('msg-embed-image').value = data.image;
+
+            updatePreview();
+        }
+
+        function syncColorInput() {
+            const hex = document.getElementById('msg-embed-color-hex').value;
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                document.getElementById('msg-embed-color').value = hex;
+                updatePreview();
+            }
+        }
+
+        function selectGif(url, element) {
+            document.getElementById('msg-embed-image').value = url;
+            document.querySelectorAll('.gif-thumb').forEach(el => el.classList.remove('border-discord-blurple'));
+            element.classList.add('border-discord-blurple');
+            updatePreview();
+        }
+
+        function clearSelectedGif() {
+            document.getElementById('msg-embed-image').value = '';
+            document.querySelectorAll('.gif-thumb').forEach(el => el.classList.remove('border-discord-blurple'));
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const text = document.getElementById('msg-text').value;
+            const title = document.getElementById('msg-embed-title').value;
+            const color = document.getElementById('msg-embed-color').value;
+            const desc = document.getElementById('msg-embed-desc').value;
+            const imgUrl = document.getElementById('msg-embed-image').value.trim();
+
+            document.getElementById('msg-embed-color-hex').value = color.toUpperCase();
+
+            document.getElementById('preview-text').textContent = text || 'Pesan teks kosong...';
+            document.getElementById('preview-embed-title').textContent = title || 'Judul Embed';
+            document.getElementById('preview-embed-desc').textContent = desc || 'Deskripsi embed...';
+            document.getElementById('preview-embed-card').style.borderColor = color;
+
+            const imgBox = document.getElementById('preview-embed-img-box');
+            const imgEl = document.getElementById('preview-embed-img');
+
+            if (imgUrl) {
+                imgEl.src = imgUrl;
+                imgBox.classList.remove('hidden');
+            } else {
+                imgBox.classList.add('hidden');
+            }
+        }
+
+        function toggleScheduleMode() {
+            const mode = document.getElementById('schedule-mode').value;
+            const specificContainer = document.getElementById('specific-time-container');
+            if (mode === 'specific-time') {
+                specificContainer.classList.remove('hidden');
+            } else {
+                specificContainer.classList.add('hidden');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = "bg-slate-900 border-emerald-500/50 text-emerald-300";
+            let icon = "fa-circle-check text-emerald-400";
+            if (type === 'error') {
+                bgClass = "bg-slate-900 border-rose-500/50 text-rose-300";
+                icon = "fa-circle-exclamation text-rose-400";
+            } else if (type === 'info') {
+                bgClass = "bg-slate-900 border-discord-blurple/50 text-indigo-300";
+                icon = "fa-circle-info text-discord-blurple";
+            }
+
+            toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-xl shadow-2xl transition-all duration-300 transform translate-y-2 opacity-0 ${bgClass}`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span class="text-xs font-semibold">${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function addLog(status, message, details = "") {
+            const container = document.getElementById('log-container');
+            if (container.querySelector('.italic')) {
+                container.innerHTML = '';
+            }
+
+            const timeStr = new Date().toLocaleTimeString('id-ID');
+            const logItem = document.createElement('div');
+            
+            let badgeClass = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+            let badgeText = "SUCCESS";
+            if (status === 'error') {
+                badgeClass = "bg-rose-500/20 text-rose-400 border-rose-500/30";
+                badgeText = "ERROR";
+            } else if (status === 'info') {
+                badgeClass = "bg-indigo-500/20 text-indigo-400 border-indigo-500/30";
+                badgeText = "INFO";
+            }
+
+            logItem.className = "bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 space-y-1";
+            logItem.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${badgeClass}">${badgeText}</span>
+                    <span class="text-[10px] text-slate-500">${timeStr}</span>
+                </div>
+                <div class="text-slate-200 truncate font-sans text-xs">${escapeHTML(message)}</div>
+                ${details ? `<div class="text-[10px] text-slate-400 font-mono">${escapeHTML(details)}</div>` : ''}
+            `;
+
+            container.prepend(logItem);
+        }
+
+        function clearLogs() {
+            document.getElementById('log-container').innerHTML = '<div class="text-slate-500 text-center py-12 italic">Belum ada riwayat aktivitas...</div>';
+            showToast("Log dibersihkan.", "info");
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        function hexToDecimal(hex) {
+            return parseInt(hex.replace("#", ""), 16) || 5793266;
+        }
+
+        async function executeWebhookSend(isTest = false) {
+            const webhookUrl = document.getElementById('webhook-url').value.trim();
+            const textContent = document.getElementById('msg-text').value.trim();
+            const title = document.getElementById('msg-embed-title').value.trim();
+            const colorHex = document.getElementById('msg-embed-color').value;
+            const desc = document.getElementById('msg-embed-desc').value.trim();
+            const imageUrl = document.getElementById('msg-embed-image').value.trim();
+
+            if (!webhookUrl) {
+                showToast("URL Webhook Discord Wajib Diisi!", "error");
+                if (!isTest) stopScheduler();
+                return false;
+            }
+
+            // Construct Discord Payload
+            const payload = {
+                content: textContent || null,
+                embeds: []
+            };
+
+            if (title || desc || imageUrl) {
+                const embedObj = {
+                    title: title || undefined,
+                    description: desc || undefined,
+                    color: hexToDecimal(colorHex)
+                };
+
+                if (imageUrl) {
+                    embedObj.image = { url: imageUrl };
+                }
+
+                payload.embeds.push(embedObj);
+            }
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok || response.status === 204) {
+                    successCount++;
+                    document.getElementById('success-count').textContent = successCount;
+                    addLog('success', textContent || title || 'Pesan Discord Terkirim', isTest ? '🧪 Uji Coba Manual' : '⏰ Automatic Scheduler');
+                    if (isTest) showToast("Pesan Test Berhasil Terkirim ke Discord!", "success");
+                    return true;
+                } else {
+                    const errText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errText}`);
+                }
+            } catch (err) {
+                console.error("Webhook Error:", err);
+                addLog('error', textContent || 'Gagal Mengirim', err.message);
+                if (isTest) showToast("Gagal mengirim: " + err.message, "error");
+                return false;
+            }
+        }
+
+        async function sendTestMessage(e) {
+            const btn = e.currentTarget;
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            await executeWebhookSend(true);
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }, 1200);
+        }
+
+        function toggleScheduler() {
+            if (isRunning) {
+                stopScheduler();
+            } else {
+                startScheduler();
+            }
+        }
+
+        function getNextIntervalMs() {
+            const mode = document.getElementById('schedule-mode').value;
+            if (mode === 'interval-5s') return 5000;
+            if (mode === 'interval-1h') return 3600 * 1000;
+            if (mode === 'interval-2h') return 2 * 3600 * 1000;
+            if (mode === 'interval-3h') return 3 * 3600 * 1000;
+            if (mode === 'interval-6h') return 6 * 3600 * 1000;
+            
+            if (mode === 'specific-time') {
+                const targetTime = document.getElementById('specific-time-input').value;
+                if (!targetTime) return 3600 * 1000;
+                
+                const now = new Date();
+                const [targetHour, targetMinute] = targetTime.split(':').map(Number);
+                
+                let nextRun = new Date();
+                nextRun.setHours(targetHour, targetMinute, 0, 0);
+
+                if (nextRun <= now) {
+                    nextRun.setDate(nextRun.getDate() + 1);
+                }
+
+                return nextRun.getTime() - now.getTime();
+            }
+
+            return 3600 * 1000;
+        }
+
+        function startScheduler() {
+            const webhookUrl = document.getElementById('webhook-url').value.trim();
+            if (!webhookUrl) {
+                showToast("Webhook URL belum diisi!", "error");
+                return;
+            }
+
+            isRunning = true;
+            
+            // UI Status Badges Update
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.className = "flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+            statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span id="status-text">Active Scheduler</span>';
+
+            const btn = document.getElementById('toggle-scheduler-btn');
+            btn.className = "w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-rose-600 to-red-600 hover:opacity-90 text-white shadow-lg transition flex items-center justify-center gap-2";
+            document.getElementById('scheduler-icon').className = "fa-solid fa-stop";
+            document.getElementById('scheduler-btn-text').textContent = "Hentikan Scheduler";
+
+            // Kirim pesan pertama langsung
+            executeWebhookSend(false);
+
+            let intervalMs = getNextIntervalMs();
+            nextRunTime = Date.now() + intervalMs;
+
+            schedulerInterval = setInterval(() => {
+                executeWebhookSend(false);
+                intervalMs = getNextIntervalMs();
+                nextRunTime = Date.now() + intervalMs;
+            }, intervalMs);
+
+            countdownInterval = setInterval(() => {
+                const remaining = nextRunTime - Date.now();
+                if (remaining <= 0) {
+                    document.getElementById('countdown-timer').textContent = "00:00:00";
+                    return;
+                }
+                const hrs = Math.floor(remaining / (1000 * 60 * 60));
+                const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((remaining % (1000 * 60)) / 1000);
+
+                document.getElementById('countdown-timer').textContent = 
+                    String(hrs).padStart(2, '0') + ":" + 
+                    String(mins).padStart(2, '0') + ":" + 
+                    String(secs).padStart(2, '0');
+            }, 1000);
+
+            showToast("Auto Scheduler berhasil diaktifkan!", "success");
+            addLog('info', 'Auto Scheduler diaktifkan.');
+        }
+
+        function stopScheduler() {
+            isRunning = false;
+            clearInterval(schedulerInterval);
+            clearInterval(countdownInterval);
+
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.className = "flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20";
+            statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span><span id="status-text">Standby</span>';
+
+            const btn = document.getElementById('toggle-scheduler-btn');
+            btn.className = "w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-discord-blurple via-cyber-purple to-cyber-pink hover:opacity-90 text-white shadow-lg transition flex items-center justify-center gap-2";
+            document.getElementById('scheduler-icon').className = "fa-solid fa-play";
+            document.getElementById('scheduler-btn-text').textContent = "Aktifkan Auto Scheduler";
+
+            document.getElementById('countdown-timer').textContent = "--:--:--";
+
+            showToast("Auto Scheduler dihentikan.", "info");
+            addLog('info', 'Auto Scheduler dihentikan.');
+        }
+    </script>
+</body>
+</html>
